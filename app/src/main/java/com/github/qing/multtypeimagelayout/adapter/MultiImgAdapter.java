@@ -1,5 +1,6 @@
 package com.github.qing.multtypeimagelayout.adapter;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.data.ContentData;
 import com.github.qing.multtypeimagelayout.data.ImageUrl;
 import com.github.qing.multtypeimagelayout.manager.ImgGridLayoutManager;
+import com.github.qing.multtypeimagelayout.utils.DisplayUtils;
 import com.github.qing.multtypeimagelayout.utils.ImageLoader;
 
 import java.util.ArrayList;
@@ -50,10 +52,15 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         ContentData.ImgBean imgBean = data.get(position);
         String url = ImageUrl.thumbUrl(imgBean.getUrl());
+        Context context = holder.itemView.getContext();
+        // 获取9宫格itemView的宽度
         if (rvWidth == 0) {
             rvWidth = recyclerView.getMeasuredWidth() - recyclerView.getPaddingLeft() - recyclerView.getPaddingRight();
-            System.out.println("rvWidth:" + rvWidth);
         }
+        if (rvWidth == 0) {
+            rvWidth = (int) (DisplayUtils.getScreenWH(context).x - context.getResources().getDimension(R.dimen.item_padding) * 2);
+        }
+        // 根据Grid item 的位置，重新设置图片的宽高
         ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) holder.imageView.getLayoutParams();
         int spanSize = layoutManager.getSpanSizeLookup().getSpanSize(position);
         if (spanSize == ImgGridLayoutManager.SPAN_SIZE) {

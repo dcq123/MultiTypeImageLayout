@@ -57,7 +57,12 @@ public class MultiImgViewBinder extends BaseContentViewBinder<MultiImgViewBinder
         private void setData(List<ContentData.ImgBean> list) {
             layoutManager.setTotalSize(list.size());
             adapter.setData(list);
-            adapter.notifyDataSetChanged();
+            multiImgRecyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.notifyDataSetChanged();
+                }
+            });
         }
     }
 }
