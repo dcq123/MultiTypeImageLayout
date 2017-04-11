@@ -70,6 +70,7 @@
         android:paddingTop="4dp">
 
         <ImageView
+            android:id="@+id/ivHeart"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@mipmap/heart" />
@@ -84,6 +85,7 @@
             tools:text="130" />
 
         <ImageView
+            android:id="@+id/ivMsg"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginLeft="32dp"
@@ -100,6 +102,7 @@
 
 
         <ImageView
+            android:id="@+id/ivShare"
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_marginLeft="32dp"

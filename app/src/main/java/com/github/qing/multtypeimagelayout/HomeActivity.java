@@ -48,19 +48,24 @@ public class HomeActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         adapter = new MultiTypeAdapter();
+
+        // 注册所有的item类型
         adapter.register(HotData.class, new HotViewBinder());
         adapter.register(WeatherData.class, new WeatherViewBinder());
         adapter.register(RecommendList.class, new RecommendViewBinder());
+        // 对于常规的内容Item，根据其是音频，图片，还是视频，进行1对多的Item映射
         adapter.register(ContentDataType.Text.class, new TextContentViewBInder());
         adapter.register(ContentDataType.SingleImage.class, new SingleImgViewBinder());
-        adapter.register(ContentDataType.MultImage.class, new MultiImgViewBinder());
+        adapter.register(ContentDataType.MultiImage.class, new MultiImgViewBinder());
         adapter.register(ContentDataType.Music.class, new MusicViewBinder());
         adapter.register(ContentDataType.Video.class, new VideoViewBinder());
 
+        // 定义 MultiType 的类型转换
         adapter.setFlatTypeAdapter(new FlatTypeClassAdapter() {
             @NonNull
             @Override
             public Class onFlattenClass(@NonNull Object item) {
+                // 当item为ContentDataType时，需要获取其映射的类型
                 if (item instanceof ContentDataType) {
                     return ((ContentDataType) item).getTypeClass();
                 }
@@ -107,20 +112,23 @@ public class HomeActivity extends AppCompatActivity {
         List<ContentData> contentDatas = newData.getContentDatas();
         for (int i = 0; i < contentDatas.size(); i++) {
             ContentData item = contentDatas.get(i);
-            int type = 1;
-            if (item.getType() == 1) {
+
+            // 根据ContentData的type确定构建那种类型的item
+            int type = ContentDataType.TYPE_TEXT;
+            if (item.getType() == ContentData.Type.TYPE_IMG) {
                 if (item.getImg().size() == 0) {
-                    type = 1;
+                    type = ContentDataType.TYPE_TEXT;
                 } else if (item.getImg().size() == 1) {
-                    type = 2;
+                    type = ContentDataType.TYPE_SINGLE_IMAGE;
                 } else {
-                    type = 3;
+                    type = ContentDataType.TYPE_MULTI_IMAGE;
                 }
-            } else if (item.getType() == 3) {
-                type = 4;
-            } else if (item.getType() == 2) {
-                type = 5;
+            } else if (item.getType() == ContentData.Type.TYPE_VIDEO) {
+                type = ContentDataType.TYPE_VIDEO;
+            } else if (item.getType() == ContentData.Type.TYPE_MUSIC) {
+                type = ContentDataType.TYPE_MUSIC;
             }
+            // wrap ContentData --> ContentDataType 类型，用于1对多的Item映射
             items.add(new ContentDataType(item, type));
             if (i == 8) {
                 items.add(newData.getWeatherData());

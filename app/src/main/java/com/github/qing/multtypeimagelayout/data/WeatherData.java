@@ -72,9 +72,7 @@ public class WeatherData {
 
         private static int[] icons = {
                 R.mipmap.weather01,
-                R.mipmap.weather02,
                 R.mipmap.weather03,
-                R.mipmap.weather04,
                 R.mipmap.weather05
         };
 

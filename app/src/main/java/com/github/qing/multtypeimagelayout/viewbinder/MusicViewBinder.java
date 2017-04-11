@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.data.ContentData;
@@ -36,7 +37,6 @@ public class MusicViewBinder extends BaseContentViewBinder<MusicViewBinder.ViewH
         holder.musicName.setText(music.getMscName());
         holder.musicSinger.setText(music.getMscSinger());
 
-
         ImageLoader.loadImage(holder.itemView.getContext(), music.getMscIcon(), holder.musicIcon,
                 new RoundedCornersTransformation(holder.itemView.getContext(), 10, 0));
     }
@@ -50,9 +50,15 @@ public class MusicViewBinder extends BaseContentViewBinder<MusicViewBinder.ViewH
         @BindView(R.id.musicSinger)
         TextView musicSinger;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(final View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(itemView.getContext(), "播放音乐", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }

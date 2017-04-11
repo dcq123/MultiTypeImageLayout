@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.data.ContentData;
@@ -27,7 +28,7 @@ import butterknife.ButterKnife;
  */
 
 public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHolder> {
-    private int rvWidth = 0;
+    private int itemViewWidth = 0;
     private List<ContentData.ImgBean> data = new ArrayList<>();
 
     private ImgGridLayoutManager layoutManager;
@@ -54,25 +55,27 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
         String url = ImageUrl.thumbUrl(imgBean.getUrl());
         Context context = holder.itemView.getContext();
         // 获取9宫格itemView的宽度
-        if (rvWidth == 0) {
-            rvWidth = recyclerView.getMeasuredWidth() - recyclerView.getPaddingLeft() - recyclerView.getPaddingRight();
+        if (itemViewWidth == 0) {
+            itemViewWidth = recyclerView.getMeasuredWidth() - recyclerView.getPaddingLeft() - recyclerView.getPaddingRight();
         }
-        if (rvWidth == 0) {
-            rvWidth = (int) (DisplayUtils.getScreenWH(context).x - context.getResources().getDimension(R.dimen.item_padding) * 2);
+        if (itemViewWidth == 0) {
+            itemViewWidth = (int) (DisplayUtils.getScreenWH(context).x - context.getResources().getDimension(R.dimen.item_padding) * 2);
         }
         // 根据Grid item 的位置，重新设置图片的宽高
         ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) holder.imageView.getLayoutParams();
         int spanSize = layoutManager.getSpanSizeLookup().getSpanSize(position);
+        // 占据一整行的item，高度设置为宽度的0.4
         if (spanSize == ImgGridLayoutManager.SPAN_SIZE) {
-            if (rvWidth != 0) {
-                layoutParams.height = (int) (rvWidth * 0.5f);
+            if (itemViewWidth != 0) {
+                layoutParams.height = (int) (itemViewWidth * 0.4f);
                 holder.imageView.requestLayout();
             }
             url = ImageUrl.normalUrl(imgBean.getUrl());
         } else {
-            if (rvWidth != 0) {
+            // 其他行的Item,宽高设置为相等
+            if (itemViewWidth != 0) {
                 int count = ImgGridLayoutManager.SPAN_SIZE / spanSize;
-                layoutParams.height = (rvWidth - (layoutParams.leftMargin - layoutParams.rightMargin) * count) / count - layoutParams.topMargin - layoutParams.bottomMargin;
+                layoutParams.height = (itemViewWidth - (layoutParams.leftMargin - layoutParams.rightMargin) * count) / count - layoutParams.topMargin - layoutParams.bottomMargin;
                 holder.imageView.requestLayout();
             }
         }
@@ -90,9 +93,17 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
         @BindView(R.id.imageView)
         ImageView imageView;
 
-        ViewHolder(View itemView) {
+        ViewHolder(final View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    Toast.makeText(itemView.getContext(), "图片位置:" + position, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }

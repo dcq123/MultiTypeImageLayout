@@ -1,5 +1,6 @@
 package com.github.qing.multtypeimagelayout.viewbinder;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.github.qing.multtypeimagelayout.R;
@@ -41,6 +43,13 @@ public class SingleImgViewBinder extends BaseContentViewBinder<SingleImgViewBind
                 .placeholder(new ColorDrawable(Color.parseColor("#eeeeee")))
                 .override(imgBean.getWidth(), imgBean.getHeight())
                 .into(holder.singleImg);
+        final Context context = holder.itemView.getContext();
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(context, "点击了图片", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     static class SingleImgViewHolder extends RecyclerView.ViewHolder {

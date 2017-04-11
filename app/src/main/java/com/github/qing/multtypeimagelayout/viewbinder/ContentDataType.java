@@ -12,13 +12,24 @@ import com.github.qing.multtypeimagelayout.data.ContentData;
 
 public class ContentDataType {
 
+    // 纯文本类型
+    public static final int TYPE_TEXT = 1;
+    // 单张图片类型
+    public static final int TYPE_SINGLE_IMAGE = 2;
+    // 多图类型
+    public static final int TYPE_MULTI_IMAGE = 3;
+    // 视频
+    public static final int TYPE_VIDEO = 4;
+    // 音频
+    public static final int TYPE_MUSIC = 5;
+
     public abstract static class Text {
     }
 
     public abstract static class SingleImage {
     }
 
-    public abstract static class MultImage {
+    public abstract static class MultiImage {
     }
 
     public abstract static class Video {
@@ -46,15 +57,15 @@ public class ContentDataType {
     @Nullable
     private static Class getTypeClass(int type) {
         switch (type) {
-            case 1:
+            case TYPE_TEXT:
                 return Text.class;
-            case 2:
+            case TYPE_SINGLE_IMAGE:
                 return SingleImage.class;
-            case 3:
-                return MultImage.class;
-            case 4:
+            case TYPE_MULTI_IMAGE:
+                return MultiImage.class;
+            case TYPE_VIDEO:
                 return Video.class;
-            case 5:
+            case TYPE_MUSIC:
                 return Music.class;
         }
         return null;

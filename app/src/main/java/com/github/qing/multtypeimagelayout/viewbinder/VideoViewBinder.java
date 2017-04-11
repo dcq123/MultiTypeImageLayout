@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.data.ContentData;
@@ -42,9 +43,16 @@ public class VideoViewBinder extends BaseContentViewBinder<VideoViewBinder.ViewH
         @BindView(R.id.videoImg)
         ImageView videoImg;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(final View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(itemView.getContext(), "播放视频", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }

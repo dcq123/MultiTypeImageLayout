@@ -6,6 +6,15 @@ import java.util.Random;
 
 public class ContentData {
 
+    public static class Type {
+        // 图片
+        public static final int TYPE_IMG = 1;
+        // 音乐
+        public static final int TYPE_MUSIC = 2;
+        // 视频
+        public static final int TYPE_VIDEO = 3;
+    }
+
 
     /**
      * icon : 图标
@@ -31,6 +40,15 @@ public class ContentData {
     private VideoBean video;
     private MusicBean music;
     private List<ImgBean> img;
+    private String newsUrl;
+
+    public String getNewsUrl() {
+        return newsUrl;
+    }
+
+    public void setNewsUrl(String newsUrl) {
+        this.newsUrl = newsUrl;
+    }
 
     public String getIcon() {
         return icon;
@@ -145,6 +163,8 @@ public class ContentData {
                 "随着互联网这张饼越来越大，越来越多的资本发现它有利可图逐步介入。"
         };
 
+        private static String DEFAULT_URL = "http://mp.weixin.qq.com/s?__biz=MjM5MjAyNDUyMA==&mid=2650498255&idx=1&sn=b4fc8a6a8b16d63b35260b401dc8af29&chksm=bea3566889d4df7e3560fc1a74e5a608cf9ae38117445dfbaac01ef196c574028730688f922f&scene=4#wechat_redirect";
+
         public static List<ContentData> random() {
             List<ContentData> datas = new ArrayList<>();
 
@@ -154,6 +174,7 @@ public class ContentData {
             }
             for (int i = 0; i < count; i++) {
                 ContentData data = new ContentData();
+                data.setNewsUrl(DEFAULT_URL);
                 data.setTitle(titles[random.nextInt(titles.length - 1)]);
                 data.setIcon(ImageUrl.thumbUrl(ImageUrl.ICONS[random.nextInt(ImageUrl.ICONS.length - 1)]));
                 data.setComments(random.nextInt(200));
@@ -163,15 +184,15 @@ public class ContentData {
 
                 int type = random.nextInt(4);
                 if (type == 0) {
-                    type = 1;
+                    type = Type.TYPE_IMG;
                 }
                 data.setType(type);
 
-                if (type == 1) {
+                if (type == Type.TYPE_IMG) {
                     data.setImg(ImgBean.RandomData.random());
-                } else if (type == 2) {
+                } else if (type == Type.TYPE_MUSIC) {
                     data.setMusic(MusicBean.RandomData.random());
-                } else {
+                } else if (type == Type.TYPE_VIDEO) {
                     data.setVideo(VideoBean.RandomData.random());
                 }
 
