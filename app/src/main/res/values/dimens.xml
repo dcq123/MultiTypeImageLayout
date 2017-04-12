@@ -2,5 +2,5 @@
 <resources>
 
     <dimen name="item_padding">12dp</dimen>
-
+    <dimen name="default_status_bar_height">25dp</dimen>
 </resources>

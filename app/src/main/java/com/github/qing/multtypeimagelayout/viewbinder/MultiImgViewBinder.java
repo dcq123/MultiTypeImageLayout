@@ -1,5 +1,9 @@
 package com.github.qing.multtypeimagelayout.viewbinder;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,7 +14,9 @@ import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.adapter.MultiImgAdapter;
 import com.github.qing.multtypeimagelayout.data.ContentData;
 import com.github.qing.multtypeimagelayout.manager.ImgGridLayoutManager;
+import com.github.qing.multtypeimagelayout.photo.PhotoActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -54,7 +60,7 @@ public class MultiImgViewBinder extends BaseContentViewBinder<MultiImgViewBinder
         }
 
 
-        private void setData(List<ContentData.ImgBean> list) {
+        private void setData(final List<ContentData.ImgBean> list) {
             layoutManager.setTotalSize(list.size());
             adapter.setData(list);
             multiImgRecyclerView.post(new Runnable() {
@@ -63,6 +69,34 @@ public class MultiImgViewBinder extends BaseContentViewBinder<MultiImgViewBinder
                     adapter.notifyDataSetChanged();
                 }
             });
+            adapter.setListener(new MultiImgAdapter.OnImageClickListener() {
+                @Override
+                public void onImageClick(int position) {
+                    showPhoto(list, position);
+                }
+            });
+        }
+
+        private void showPhoto(List<ContentData.ImgBean> list, int index) {
+            String[] urls = new String[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                urls[i] = list.get(i).getUrl();
+            }
+            int childCount = multiImgRecyclerView.getChildCount();
+            ArrayList<Rect> rects = new ArrayList<>();
+            for (int i = 0; i < childCount; i++) {
+                View view = multiImgRecyclerView.getLayoutManager().findViewByPosition(i);
+                Rect rect = new Rect();
+                view.getGlobalVisibleRect(rect);
+                rects.add(rect);
+            }
+
+            Context context = itemView.getContext();
+            Intent intent = new Intent(context, PhotoActivity.class);
+            intent.putExtra(PhotoActivity.KEY_INDEX, index);
+            intent.putExtra(PhotoActivity.KEY_IMG_URL, urls);
+            intent.putExtra(PhotoActivity.KEY_RECT, rects);
+            context.startActivity(intent);
         }
     }
 }

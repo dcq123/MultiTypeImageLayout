@@ -1,19 +1,21 @@
 package com.github.qing.multtypeimagelayout.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.data.ContentData;
 import com.github.qing.multtypeimagelayout.data.ImageUrl;
 import com.github.qing.multtypeimagelayout.manager.ImgGridLayoutManager;
 import com.github.qing.multtypeimagelayout.utils.DisplayUtils;
-import com.github.qing.multtypeimagelayout.utils.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,7 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
 
     private ImgGridLayoutManager layoutManager;
     private RecyclerView recyclerView;
+    private OnImageClickListener listener;
 
     public MultiImgAdapter(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
@@ -50,9 +53,9 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         ContentData.ImgBean imgBean = data.get(position);
-        String url = ImageUrl.thumbUrl(imgBean.getUrl());
+//        String url = ImageUrl.thumbUrl(imgBean.getUrl());
         Context context = holder.itemView.getContext();
         // 获取9宫格itemView的宽度
         if (itemViewWidth == 0) {
@@ -70,7 +73,7 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
                 layoutParams.height = (int) (itemViewWidth * 0.4f);
                 holder.imageView.requestLayout();
             }
-            url = ImageUrl.normalUrl(imgBean.getUrl());
+//            url = ImageUrl.normalUrl(imgBean.getUrl());
         } else {
             // 其他行的Item,宽高设置为相等
             if (itemViewWidth != 0) {
@@ -79,7 +82,21 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
                 holder.imageView.requestLayout();
             }
         }
-        ImageLoader.loadImage(holder.itemView.getContext(), url, holder.imageView);
+        final String url = ImageUrl.webplUrl(imgBean.getUrl());
+        holder.imageView.setTag(url);
+//        ImageLoader.loadImage(holder.itemView.getContext().getApplicationContext(), ImageUrl.webplUrl(imgBean.getUrl()), holder.imageView);
+        Glide.with(holder.itemView.getContext())
+                .load(url)
+                .asBitmap()
+                .into(new SimpleTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                        Object tag = holder.imageView.getTag();
+                        if (tag != null && tag.equals(url)) {
+                            holder.imageView.setImageBitmap(resource);
+                        }
+                    }
+                });
     }
 
     @Override
@@ -87,8 +104,15 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
         return data.size();
     }
 
+    public interface OnImageClickListener {
+        void onImageClick(int position);
+    }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public void setListener(OnImageClickListener listener) {
+        this.listener = listener;
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.imageView)
         ImageView imageView;
@@ -97,11 +121,12 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
             super(itemView);
             ButterKnife.bind(this, itemView);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
+            imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int position = getAdapterPosition();
-                    Toast.makeText(itemView.getContext(), "图片位置:" + position, Toast.LENGTH_SHORT).show();
+                    if (listener != null && v instanceof ImageView) {
+                        listener.onImageClick(getAdapterPosition());
+                    }
                 }
             });
         }

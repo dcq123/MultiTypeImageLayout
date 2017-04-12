@@ -9,7 +9,9 @@ public class ImageUrl {
     /**
      * 正常图片后缀
      */
-    private static String NORMAL_SUFFIX = "?imageView2/0/format/webp/q/75|imageslim";
+    private static String NORMAL_SUFFIX = "?imageView2/0/q/100|imageslim";
+
+    private static String WEBP_SUFFIX = "?imageView2/0/format/webp/q/1|imageslim";
 
     public static String[] URLS = {
             "http://onxvhxvw6.bkt.clouddn.com/image/fengjing/01.jpg",
@@ -56,6 +58,10 @@ public class ImageUrl {
 
     public static String normalUrl(String url) {
         return url + NORMAL_SUFFIX;
+    }
+
+    public static String webplUrl(String url) {
+        return url + WEBP_SUFFIX;
     }
 
 }
