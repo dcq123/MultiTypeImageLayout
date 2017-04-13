@@ -17,9 +17,6 @@ import com.github.chrisbanes.photoview.PhotoView;
 import com.github.qing.multtypeimagelayout.R;
 
 
-/**
- * Created by nirvanawoody on 2016/5/17.
- */
 public class SmoothImageView extends PhotoView {
 
     public enum Status {
@@ -76,7 +73,15 @@ public class SmoothImageView extends PhotoView {
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(mBgColor);
         matrix = new Matrix();
-//		setOnDoubleTapListener();
+        setScaleType(ScaleType.FIT_CENTER);
+    }
+
+    public boolean checkMinScale() {
+        if (getScale() != 1) {
+            setScale(1, true);
+            return false;
+        }
+        return true;
     }
 
     @Override

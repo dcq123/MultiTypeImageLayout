@@ -60,7 +60,10 @@ public class PhotoFragment extends LazyFragment {
             Glide.with(this).load(ImageUrl.webplUrl(imgUrl)).asBitmap().into(new SimpleTarget<Bitmap>() {
                 @Override
                 public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                    photoView.setImageBitmap(resource);
+                    if (photoView.getDrawable() == null) {
+                        photoView.setImageBitmap(resource);
+                    }
+
                 }
             });
         }
@@ -68,16 +71,19 @@ public class PhotoFragment extends LazyFragment {
 
 
     private void initView() {
-        photoView.setMinimumScale(0.5f);
+        photoView.setMinimumScale(1f);
         photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
             @Override
             public void onPhotoTap(ImageView view, float x, float y) {
-                ((PhotoActivity) getActivity()).transformOut();
+                if (photoView.checkMinScale()) {
+                    ((PhotoActivity) getActivity()).transformOut();
+                }
             }
         });
     }
 
     private boolean isLoaded = false;
+    private boolean isLoadFinish = false;
 
     @Override
     protected void onLazy() {
@@ -89,7 +95,14 @@ public class PhotoFragment extends LazyFragment {
 
             @Override
             public void onLoadStarted(Drawable placeholder) {
-                progress.setVisibility(View.VISIBLE);
+                progress.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isLoadFinish) {
+                            progress.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }, 400);
             }
 
             @Override
@@ -99,6 +112,7 @@ public class PhotoFragment extends LazyFragment {
 
             @Override
             public void onResourceReady(Bitmap bitmap, GlideAnimation glideAnimation) {
+                isLoadFinish = true;
                 progress.setVisibility(View.GONE);
                 photoView.setImageBitmap(bitmap);
             }

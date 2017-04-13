@@ -6,7 +6,6 @@
     <com.github.qing.multtypeimagelayout.photo.SmoothImageView
         android:id="@+id/photoView"
         android:layout_width="match_parent"
-        android:scaleType="fitCenter"
         android:layout_height="match_parent" />
 
     <ProgressBar
