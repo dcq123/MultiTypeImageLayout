@@ -1,6 +1,8 @@
 package com.github.qing.multtypeimagelayout.photo;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -11,25 +13,29 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.github.chrisbanes.photoview.PhotoView;
 import com.github.qing.multtypeimagelayout.R;
 
+import java.lang.reflect.Field;
+
 
 public class SmoothImageView extends PhotoView {
 
-    public enum Status {
+    enum Status {
         STATE_NORMAL,
         STATE_IN,
-        STATE_OUT
+        STATE_OUT,
+        STATE_MOVE
     }
 
     private Status mStatus = Status.STATE_NORMAL;
+    private static final int TRANSFORM_DURATION = 300;
     private Paint mPaint;
     private int mBgColor = 0xFF000000;
     private Matrix matrix;
-    private boolean transformEnabled = true;
     private Bitmap mBitmap;
 
     private Transform startTransform;
@@ -52,10 +58,6 @@ public class SmoothImageView extends PhotoView {
             }
             return obj;
         }
-    }
-
-    public void setTransformEnabled(boolean transformEnabled) {
-        this.transformEnabled = transformEnabled;
     }
 
     public SmoothImageView(Context context, AttributeSet attrs) {
@@ -117,10 +119,145 @@ public class SmoothImageView extends PhotoView {
             if (transformStart) {
                 startTransform();
             }
+        } else if (mStatus == Status.STATE_MOVE) {
+            mPaint.setAlpha(0);
+            canvas.drawPaint(mPaint);
+            super.onDraw(canvas);
         } else {
             mPaint.setAlpha(255);
             canvas.drawPaint(mPaint);
             super.onDraw(canvas);
+        }
+    }
+
+    private int downX, downY;
+    private boolean isMoved = false;
+    private int alpha = 0;
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (getScale() == 1) {
+            int action = event.getAction();
+            switch (action) {
+                case MotionEvent.ACTION_DOWN:
+                    downX = (int) event.getX();
+                    downY = (int) event.getY();
+                    isMoved = false;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+
+                    int mx = (int) event.getX();
+                    int my = (int) event.getY();
+
+                    int destX = mx - downX;
+                    int destY = my - downY;
+
+                    // 水平方向移动，交给父容器处理
+                    if (Math.abs(destX) > Math.abs(destY)) {
+                        return super.dispatchTouchEvent(event);
+                    } else {
+                        if (event.getPointerCount() == 1) {
+                            float scale = moveScale();
+//                            System.out.println("getTop:" + getTop());
+                            if ((scale > 0.8 && destY > 0) || (scale < -0.8 && destY < 0)) {
+                                return true;
+                            }
+                            mStatus = Status.STATE_MOVE;
+                            offsetTopAndBottom(destY);
+                            scale = moveScale();
+                            isMoved = true;
+                            alpha = (int) (255 * (1 - scale));
+                            if (alpha < 50) {
+                                alpha = 50;
+                            }
+                            invalidate();
+                            if (alphaChangeListener != null) {
+                                alphaChangeListener.onAlphaChange(alpha);
+                            }
+                            return true;
+                        }
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (isMoved) {
+                        float scale = moveScale();
+                        if (Math.abs(scale) <= 0.5f) {
+                            moveToOldPosition();
+                        } else {
+                            changeTransform();
+                            if (transformOutListener != null) {
+                                transformOutListener.onTransformOut();
+                            }
+                        }
+                        return true;
+                    }
+                    break;
+            }
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+    private void moveToOldPosition() {
+        ValueAnimator va = ValueAnimator.ofInt(0, getTop());
+        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int value = (int) animation.getAnimatedValue();
+                setTranslationY(-value);
+            }
+        });
+
+        ValueAnimator alphaAnim = ValueAnimator.ofInt(alpha, 255);
+        alphaAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                if (alphaChangeListener != null) {
+                    alphaChangeListener.onAlphaChange((Integer) animation.getAnimatedValue());
+                }
+            }
+        });
+
+        AnimatorSet as = new AnimatorSet();
+        as.setDuration(TRANSFORM_DURATION);
+        as.setInterpolator(new AccelerateDecelerateInterpolator());
+        as.playTogether(va, alphaAnim);
+        as.start();
+    }
+
+    private float moveScale() {
+        return Math.abs(getTop() / markTransform.height);
+    }
+
+    private OnAlphaChangeListener alphaChangeListener;
+    private OnTransformOutListener transformOutListener;
+
+
+    public void setTransformOutListener(OnTransformOutListener transformOutListener) {
+        this.transformOutListener = transformOutListener;
+    }
+
+    public void setAlphaChangeListener(OnAlphaChangeListener alphaChangeListener) {
+        this.alphaChangeListener = alphaChangeListener;
+    }
+
+    public interface OnTransformOutListener {
+        void onTransformOut();
+    }
+
+    public interface OnAlphaChangeListener {
+        void onAlphaChange(int alpha);
+    }
+
+    private Transform markTransform;
+
+    private void changeTransform() {
+        if (markTransform != null) {
+            Transform tempTransform = markTransform.clone();
+            tempTransform.top = markTransform.top + getTop();
+            tempTransform.alpha = alpha;
+            animTransform = tempTransform.clone();
+            endTransform = tempTransform.clone();
         }
     }
 
@@ -131,7 +268,7 @@ public class SmoothImageView extends PhotoView {
         }
 
         ValueAnimator animator = new ValueAnimator();
-        animator.setDuration(300);
+        animator.setDuration(TRANSFORM_DURATION);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         if (mStatus == Status.STATE_IN) {
             PropertyValuesHolder scaleHolder = PropertyValuesHolder.ofFloat("animScale", startTransform.scale, endTransform.scale);
@@ -170,7 +307,7 @@ public class SmoothImageView extends PhotoView {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-/*
+                /*
                  * 如果是进入的话，当然是希望最后停留在center_crop的区域。但是如果是out的话，就不应该是center_crop的位置了
 				 * ， 而应该是最后变化的位置，因为当out的时候结束时，不回复视图是Normal，要不然会有一个突然闪动回去的bug
 				 */
@@ -205,6 +342,9 @@ public class SmoothImageView extends PhotoView {
     }
 
     public void transformOut(Rect thumbRect, onTransformListener listener) {
+        if (getTop() != 0) {
+            offsetTopAndBottom(-getTop());
+        }
         this.thumbRect = thumbRect;
         setOnTransformListener(listener);
         transformStart = true;
@@ -259,10 +399,12 @@ public class SmoothImageView extends PhotoView {
         } else if (mStatus == Status.STATE_OUT) {
             animTransform = endTransform.clone();
         }
+
+        markTransform = endTransform;
     }
 
     public interface onTransformListener {
-        public void onTransformCompleted(Status status);
+        void onTransformCompleted(Status status);
 
     }
 
@@ -274,16 +416,12 @@ public class SmoothImageView extends PhotoView {
     }
 
     public static int getStatusBarHeight(Context context) {
-        Class<?> c = null;
-        Object obj = null;
-        java.lang.reflect.Field field = null;
-        int x = 0;
         int statusBarHeight = context.getResources().getDimensionPixelSize(R.dimen.default_status_bar_height);
         try {
-            c = Class.forName("com.android.internal.R$dimen");
-            obj = c.newInstance();
-            field = c.getField("status_bar_height");
-            x = Integer.parseInt(field.get(obj).toString());
+            Class<?> c = Class.forName("com.android.internal.R$dimen");
+            Object obj = c.newInstance();
+            Field field = c.getField("status_bar_height");
+            int x = Integer.parseInt(field.get(obj).toString());
             statusBarHeight = context.getResources().getDimensionPixelSize(x);
             return statusBarHeight;
         } catch (Exception e) {

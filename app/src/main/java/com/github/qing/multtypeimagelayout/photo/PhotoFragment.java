@@ -1,6 +1,7 @@
 package com.github.qing.multtypeimagelayout.photo;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -35,6 +36,8 @@ public class PhotoFragment extends LazyFragment {
     SmoothImageView photoView;
     @BindView(R.id.progress)
     ProgressBar progress;
+    @BindView(R.id.rootView)
+    View rootView;
 
     private Rect startBounds;
     private String imgUrl;
@@ -69,7 +72,6 @@ public class PhotoFragment extends LazyFragment {
         }
     }
 
-
     private void initView() {
         photoView.setMinimumScale(1f);
         photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
@@ -80,6 +82,28 @@ public class PhotoFragment extends LazyFragment {
                 }
             }
         });
+
+        photoView.setAlphaChangeListener(new SmoothImageView.OnAlphaChangeListener() {
+            @Override
+            public void onAlphaChange(int alpha) {
+                rootView.setBackgroundColor(getColorWithAlpha(alpha / 255f, Color.BLACK));
+            }
+        });
+
+        photoView.setTransformOutListener(new SmoothImageView.OnTransformOutListener() {
+            @Override
+            public void onTransformOut() {
+                if (photoView.checkMinScale()) {
+                    ((PhotoActivity) getActivity()).transformOut();
+                }
+            }
+        });
+    }
+
+    public static int getColorWithAlpha(float alpha, int baseColor) {
+        int a = Math.min(255, Math.max(0, (int) (alpha * 255))) << 24;
+        int rgb = 0x00ffffff & baseColor;
+        return a + rgb;
     }
 
     private boolean isLoaded = false;
@@ -119,11 +143,20 @@ public class PhotoFragment extends LazyFragment {
         });
     }
 
-    public void transformIn(SmoothImageView.onTransformListener listener) {
-        photoView.transformIn(startBounds, listener);
+    public void transformIn() {
+        photoView.transformIn(startBounds, new SmoothImageView.onTransformListener() {
+            @Override
+            public void onTransformCompleted(SmoothImageView.Status status) {
+                rootView.setBackgroundColor(Color.BLACK);
+            }
+        });
     }
 
     public void transformOut(SmoothImageView.onTransformListener listener) {
         photoView.transformOut(startBounds, listener);
+    }
+
+    public void changeBg(int color) {
+        rootView.setBackgroundColor(color);
     }
 }

@@ -1,7 +1,6 @@
 package com.github.qing.multtypeimagelayout.photo;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -98,13 +97,8 @@ public class PhotoActivity extends FragmentActivity {
             @Override
             public void onGlobalLayout() {
                 viewPager.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                PhotoFragment fragment = fragments.get(currentIndex);
-                fragment.transformIn(new SmoothImageView.onTransformListener() {
-                    @Override
-                    public void onTransformCompleted(SmoothImageView.Status status) {
-                        rootView.setBackgroundColor(Color.BLACK);
-                    }
-                });
+                final PhotoFragment fragment = fragments.get(currentIndex);
+                fragment.transformIn();
             }
         });
 
@@ -124,7 +118,8 @@ public class PhotoActivity extends FragmentActivity {
         if (currentItem < rects.size()) {
             PhotoFragment fragment = fragments.get(currentItem);
             indicator.setVisibility(View.GONE);
-            rootView.setBackgroundColor(Color.TRANSPARENT);
+//            rootView.setBackgroundColor(Color.TRANSPARENT);
+            fragment.changeBg(Color.TRANSPARENT);
             fragment.transformOut(new SmoothImageView.onTransformListener() {
                 @Override
                 public void onTransformCompleted(SmoothImageView.Status status) {
