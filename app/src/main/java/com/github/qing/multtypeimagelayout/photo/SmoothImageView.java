@@ -131,6 +131,7 @@ public class SmoothImageView extends PhotoView {
 
     private int downX, downY;
     private boolean isMoved = false;
+    private boolean isDownPhoto = false;
     private int alpha = 0;
     private static final int MIN_TRANS_DEST = 5;
     private static final float MAX_TRANS_SCALE = 0.5f;
@@ -144,9 +145,24 @@ public class SmoothImageView extends PhotoView {
                 case MotionEvent.ACTION_DOWN:
                     downX = (int) event.getX();
                     downY = (int) event.getY();
+                    if (markTransform == null) {
+                        initTransform();
+                    }
+                    isDownPhoto = false;
+                    if (markTransform != null) {
+                        int startY = (int) markTransform.top;
+                        int endY = (int) (markTransform.height + markTransform.top);
+                        if (downY >= startY && endY >= downY) {
+                            isDownPhoto = true;
+                        }
+                    }
+
                     isMoved = false;
                     break;
                 case MotionEvent.ACTION_MOVE:
+                    if (!isDownPhoto) {
+                        break;
+                    }
 
                     int mx = (int) event.getX();
                     int my = (int) event.getY();
@@ -158,6 +174,7 @@ public class SmoothImageView extends PhotoView {
                     if (!isMoved && (Math.abs(offsetX) > Math.abs(offsetY) || Math.abs(offsetY) < MIN_TRANS_DEST)) {
                         return super.dispatchTouchEvent(event);
                     } else {
+                        // 一指滑动时，才对图片进行移动缩放处理
                         if (event.getPointerCount() == 1) {
                             mStatus = Status.STATE_MOVE;
                             offsetLeftAndRight(offsetX);
@@ -177,10 +194,11 @@ public class SmoothImageView extends PhotoView {
                             }
                             return true;
                         }
+                        // 多指滑动，直接屏蔽事件
+                        else {
+                            return true;
+                        }
                     }
-                    downX = mx;
-                    downY = my;
-                    break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     if (isMoved) {
@@ -200,6 +218,9 @@ public class SmoothImageView extends PhotoView {
         return super.dispatchTouchEvent(event);
     }
 
+    /**
+     * 未达到关闭的阈值松手时，返回到初始位置
+     */
     private void moveToOldPosition() {
         ValueAnimator va = ValueAnimator.ofInt(getTop(), 0);
         va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
