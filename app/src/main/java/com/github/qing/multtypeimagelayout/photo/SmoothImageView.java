@@ -1,7 +1,6 @@
 package com.github.qing.multtypeimagelayout.photo;
 
 import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
@@ -34,7 +33,6 @@ public class SmoothImageView extends PhotoView {
     private Status mStatus = Status.STATE_NORMAL;
     private static final int TRANSFORM_DURATION = 300;
     private Paint mPaint;
-    private int mBgColor = 0xFF000000;
     private Matrix matrix;
     private Bitmap mBitmap;
 
@@ -73,7 +71,7 @@ public class SmoothImageView extends PhotoView {
     private void initSmoothImageView() {
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(mBgColor);
+        mPaint.setColor(0xFF000000);
         matrix = new Matrix();
         setScaleType(ScaleType.FIT_CENTER);
     }
@@ -133,6 +131,9 @@ public class SmoothImageView extends PhotoView {
     private int downX, downY;
     private boolean isMoved = false;
     private int alpha = 0;
+    private static final int MIN_TRANS_DEST = 8;
+    private static final float MAX_TRANS_SCALE = 0.6f;
+
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
@@ -149,27 +150,26 @@ public class SmoothImageView extends PhotoView {
                     int mx = (int) event.getX();
                     int my = (int) event.getY();
 
-                    int destX = mx - downX;
-                    int destY = my - downY;
+                    int offsetX = mx - downX;
+                    int offsetY = my - downY;
 
-                    // 水平方向移动，交给父容器处理
-                    if (Math.abs(destX) > Math.abs(destY)) {
+                    // 水平方向移动不予处理
+                    if (Math.abs(offsetX) > Math.abs(offsetY) || Math.abs(offsetY) < MIN_TRANS_DEST) {
                         return super.dispatchTouchEvent(event);
                     } else {
                         if (event.getPointerCount() == 1) {
                             float scale = moveScale();
-//                            System.out.println("getTop:" + getTop());
-                            if ((scale > 0.8 && destY > 0) || (scale < -0.8 && destY < 0)) {
+                            if ((offsetY > 0 && scale > 0 && scale >= MAX_TRANS_SCALE)
+                                    || (offsetY < 0 && scale < 0 && Math.abs(scale) >= MAX_TRANS_SCALE)) {
                                 return true;
                             }
                             mStatus = Status.STATE_MOVE;
-                            offsetTopAndBottom(destY);
-                            scale = moveScale();
+                            int dest = offsetY > 0 ? 1 : -1;
+                            // 在此处为了滑动效果，仅移动固定的距离，不跟随offsetY进行移动
+                            offsetTopAndBottom(dest * 8);
+                            scale = Math.abs(moveScale());
                             isMoved = true;
                             alpha = (int) (255 * (1 - scale));
-                            if (alpha < 50) {
-                                alpha = 50;
-                            }
                             invalidate();
                             if (alphaChangeListener != null) {
                                 alphaChangeListener.onAlphaChange(alpha);
@@ -182,7 +182,7 @@ public class SmoothImageView extends PhotoView {
                 case MotionEvent.ACTION_CANCEL:
                     if (isMoved) {
                         float scale = moveScale();
-                        if (Math.abs(scale) <= 0.5f) {
+                        if (Math.abs(scale) <= MAX_TRANS_SCALE / 2) {
                             moveToOldPosition();
                         } else {
                             changeTransform();
@@ -199,12 +199,17 @@ public class SmoothImageView extends PhotoView {
     }
 
     private void moveToOldPosition() {
-        ValueAnimator va = ValueAnimator.ofInt(0, getTop());
+        ValueAnimator va = ValueAnimator.ofInt(getTop(), 0);
         va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            int startValue = 0;
+
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 int value = (int) animation.getAnimatedValue();
-                setTranslationY(-value);
+                if (startValue != 0) {
+                    offsetTopAndBottom(value - startValue);
+                }
+                startValue = value;
             }
         });
 
@@ -226,7 +231,10 @@ public class SmoothImageView extends PhotoView {
     }
 
     private float moveScale() {
-        return Math.abs(getTop() / markTransform.height);
+        if (markTransform == null) {
+            initTransform();
+        }
+        return getTop() / markTransform.height;
     }
 
     private OnAlphaChangeListener alphaChangeListener;
@@ -333,23 +341,30 @@ public class SmoothImageView extends PhotoView {
 
     }
 
-    public void transformIn(Rect thunmbRect, onTransformListener listener) {
-        this.thumbRect = thunmbRect;
+    public void transformIn(onTransformListener listener) {
         setOnTransformListener(listener);
         transformStart = true;
         mStatus = Status.STATE_IN;
         invalidate();
     }
 
-    public void transformOut(Rect thumbRect, onTransformListener listener) {
+    public void transformOut(onTransformListener listener) {
         if (getTop() != 0) {
             offsetTopAndBottom(-getTop());
         }
-        this.thumbRect = thumbRect;
         setOnTransformListener(listener);
         transformStart = true;
         mStatus = Status.STATE_OUT;
         invalidate();
+    }
+
+    /**
+     * 设置起始位置图片的Rect
+     *
+     * @param thumbRect
+     */
+    public void setThumbRect(Rect thumbRect) {
+        this.thumbRect = thumbRect;
     }
 
     private void initTransform() {

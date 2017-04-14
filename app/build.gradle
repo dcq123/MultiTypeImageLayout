@@ -32,4 +32,6 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
 
     compile 'com.github.chrisbanes:PhotoView:2.0.0'
+
+    compile 'com.pnikosis:materialish-progress:1.7'
 }

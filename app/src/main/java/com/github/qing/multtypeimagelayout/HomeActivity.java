@@ -7,10 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 
 import com.github.qing.itemdecoration.LinearDividerItemDecoration;
-import com.github.qing.multtypeimagelayout.data.ContentData;
 import com.github.qing.multtypeimagelayout.data.DataFactory;
 import com.github.qing.multtypeimagelayout.data.HotData;
-import com.github.qing.multtypeimagelayout.data.JikeData;
 import com.github.qing.multtypeimagelayout.data.RecommendList;
 import com.github.qing.multtypeimagelayout.data.WeatherData;
 import com.github.qing.multtypeimagelayout.viewbinder.ContentDataType;
@@ -73,7 +71,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-
+        // 添加列表分隔符
         recyclerView.addItemDecoration(
                 new LinearDividerItemDecoration.Builder()
                         .setDividerHeight(16)
@@ -106,37 +104,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void loadData() {
-        JikeData newData = DataFactory.createNewData();
         items.clear();
-        items.add(newData.getHotData());
-        List<ContentData> contentDatas = newData.getContentDatas();
-        for (int i = 0; i < contentDatas.size(); i++) {
-            ContentData item = contentDatas.get(i);
-
-            // 根据ContentData的type确定构建那种类型的item
-            int type = ContentDataType.TYPE_TEXT;
-            if (item.getType() == ContentData.Type.TYPE_IMG) {
-                if (item.getImg().size() == 0) {
-                    type = ContentDataType.TYPE_TEXT;
-                } else if (item.getImg().size() == 1) {
-                    type = ContentDataType.TYPE_SINGLE_IMAGE;
-                } else {
-                    type = ContentDataType.TYPE_MULTI_IMAGE;
-                }
-            } else if (item.getType() == ContentData.Type.TYPE_VIDEO) {
-                type = ContentDataType.TYPE_VIDEO;
-            } else if (item.getType() == ContentData.Type.TYPE_MUSIC) {
-                type = ContentDataType.TYPE_MUSIC;
-            }
-            // wrap ContentData --> ContentDataType 类型，用于1对多的Item映射
-            items.add(new ContentDataType(item, type));
-            if (i == 8) {
-                items.add(newData.getWeatherData());
-            }
-            if (i == 12) {
-                items.add(new RecommendList(newData.getRecommendDatas()));
-            }
-        }
+        items.addAll(DataFactory.createData());
         adapter.setItems(items);
         adapter.notifyDataSetChanged();
     }

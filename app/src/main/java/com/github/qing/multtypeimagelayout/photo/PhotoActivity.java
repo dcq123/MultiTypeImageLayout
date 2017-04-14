@@ -32,8 +32,6 @@ public class PhotoActivity extends FragmentActivity {
     PhotoViewPager viewPager;
     @BindView(R.id.indicator)
     TextView indicator;
-    @BindView(R.id.rootView)
-    View rootView;
 
     private ArrayList<Rect> rects;
     private int currentIndex;
@@ -82,7 +80,7 @@ public class PhotoActivity extends FragmentActivity {
 
             @Override
             public void onPageSelected(int position) {
-                indicator.setText((position + 1) + "/" + fragments.size());
+                indicator.setText((position + 1) + " / " + fragments.size());
             }
 
             @Override
@@ -91,7 +89,7 @@ public class PhotoActivity extends FragmentActivity {
             }
         });
         viewPager.setCurrentItem(currentIndex);
-        indicator.setText((currentIndex + 1) + "/" + fragments.size());
+
 
         viewPager.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -99,6 +97,8 @@ public class PhotoActivity extends FragmentActivity {
                 viewPager.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 final PhotoFragment fragment = fragments.get(currentIndex);
                 fragment.transformIn();
+                indicator.setText((currentIndex + 1) + " / " + fragments.size());
+
             }
         });
 
@@ -118,7 +118,6 @@ public class PhotoActivity extends FragmentActivity {
         if (currentItem < rects.size()) {
             PhotoFragment fragment = fragments.get(currentItem);
             indicator.setVisibility(View.GONE);
-//            rootView.setBackgroundColor(Color.TRANSPARENT);
             fragment.changeBg(Color.TRANSPARENT);
             fragment.transformOut(new SmoothImageView.onTransformListener() {
                 @Override

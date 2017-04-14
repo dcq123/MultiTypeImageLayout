@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -17,6 +16,7 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.data.ImageUrl;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,11 +35,10 @@ public class PhotoFragment extends LazyFragment {
     @BindView(R.id.photoView)
     SmoothImageView photoView;
     @BindView(R.id.progress)
-    ProgressBar progress;
+    ProgressWheel progress;
     @BindView(R.id.rootView)
     View rootView;
 
-    private Rect startBounds;
     private String imgUrl;
 
     @Override
@@ -58,15 +57,16 @@ public class PhotoFragment extends LazyFragment {
         Bundle args = getArguments();
         if (args != null && args.containsKey(KEY_IMG_URL)) {
             imgUrl = args.getString(KEY_IMG_URL);
-            startBounds = args.getParcelable(KEY_START_BOUND);
+            Rect startBounds = args.getParcelable(KEY_START_BOUND);
+            photoView.setThumbRect(startBounds);
 
+            // 先加在小图中Glide已经缓存过的图片，在Fragment显示的时，再加载清晰的大图
             Glide.with(this).load(ImageUrl.webplUrl(imgUrl)).asBitmap().into(new SimpleTarget<Bitmap>() {
                 @Override
                 public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
                     if (photoView.getDrawable() == null) {
                         photoView.setImageBitmap(resource);
                     }
-
                 }
             });
         }
@@ -144,7 +144,7 @@ public class PhotoFragment extends LazyFragment {
     }
 
     public void transformIn() {
-        photoView.transformIn(startBounds, new SmoothImageView.onTransformListener() {
+        photoView.transformIn(new SmoothImageView.onTransformListener() {
             @Override
             public void onTransformCompleted(SmoothImageView.Status status) {
                 rootView.setBackgroundColor(Color.BLACK);
@@ -153,7 +153,7 @@ public class PhotoFragment extends LazyFragment {
     }
 
     public void transformOut(SmoothImageView.onTransformListener listener) {
-        photoView.transformOut(startBounds, listener);
+        photoView.transformOut(listener);
     }
 
     public void changeBg(int color) {

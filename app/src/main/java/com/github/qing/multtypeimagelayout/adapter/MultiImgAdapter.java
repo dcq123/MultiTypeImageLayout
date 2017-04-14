@@ -55,7 +55,6 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         ContentData.ImgBean imgBean = data.get(position);
-//        String url = ImageUrl.thumbUrl(imgBean.getUrl());
         Context context = holder.itemView.getContext();
         // 获取9宫格itemView的宽度
         if (itemViewWidth == 0) {
@@ -73,7 +72,6 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
                 layoutParams.height = (int) (itemViewWidth * 0.4f);
                 holder.imageView.requestLayout();
             }
-//            url = ImageUrl.normalUrl(imgBean.getUrl());
         } else {
             // 其他行的Item,宽高设置为相等
             if (itemViewWidth != 0) {
@@ -84,7 +82,23 @@ public class MultiImgAdapter extends RecyclerView.Adapter<MultiImgAdapter.ViewHo
         }
         final String url = ImageUrl.webplUrl(imgBean.getUrl());
         holder.imageView.setTag(url);
-//        ImageLoader.loadImage(holder.itemView.getContext().getApplicationContext(), ImageUrl.webplUrl(imgBean.getUrl()), holder.imageView);
+
+
+        /**
+         *
+         * 此处注释原有Glide直接加载并显示到ImageView中的方式，而使用下载图片，并手动设置到ImageView上。
+         * 其原因是：Glide缓存策略中使用的key是根据4部分组成
+         *      1.DataFetcher的方法getId()返回的字符，通常是我们指定的url
+         *      2.宽和高。如果你调用过override(width,height)方法，那么就是是它传入的值。没有调用过，默认是通过Target的getSize()方法获得这个值。
+         *      3.各种编码器、解码器的getId()方法返回的字符串。
+         *      4.可选地，你可以为图片加载提供签名(Signature)
+         *
+         * 以上组成key的4部分，确定了另一个ImageView加载图片时，能否去使用缓存中的数据，
+         * 在点击小图，平滑移动到photoView中进行预览时，由于size已经不同，所以在photoView展现图片时，并未使用到缓存的数据，这就导致过渡动画无法展现
+         * 所以在此，直接使用图片下载的方式，来公用缓存的图片数据
+         *
+         */
+        // ImageLoader.loadImage(holder.itemView.getContext().getApplicationContext(), ImageUrl.webplUrl(imgBean.getUrl()), holder.imageView);
         Glide.with(holder.itemView.getContext())
                 .load(url)
                 .asBitmap()
