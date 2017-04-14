@@ -30,6 +30,8 @@ public class PhotoFragment extends LazyFragment {
 
     public static final String KEY_IMG_URL = "img_url";
     public static final String KEY_START_BOUND = "startBounds";
+    public static final String KEY_TRANS_PHOTO = "is_trans_photo";
+
 
     @BindView(R.id.photoView)
     SmoothImageView photoView;
@@ -39,6 +41,8 @@ public class PhotoFragment extends LazyFragment {
     View progress;
 
     private String imgUrl;
+    // 是否是以动画进入的Fragment
+    private boolean isTransPhoto = false;
 
     @Override
     protected View initViews(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,6 +62,7 @@ public class PhotoFragment extends LazyFragment {
             imgUrl = args.getString(KEY_IMG_URL);
             Rect startBounds = args.getParcelable(KEY_START_BOUND);
             photoView.setThumbRect(startBounds);
+            isTransPhoto = args.getBoolean(KEY_TRANS_PHOTO, false);
 
             // 先加在小图中Glide已经缓存过的图片，在Fragment显示的时，再加载清晰的大图
             Glide.with(this).load(ImageUrl.webplUrl(imgUrl)).asBitmap().into(new SimpleTarget<Bitmap>() {
@@ -72,6 +77,10 @@ public class PhotoFragment extends LazyFragment {
     }
 
     private void initView() {
+        // 非动画进入的Fragment，默认背景为黑色
+        if (!isTransPhoto) {
+            rootView.setBackgroundColor(Color.BLACK);
+        }
         photoView.setMinimumScale(1f);
         photoView.setOnPhotoTapListener(new OnPhotoTapListener() {
             @Override

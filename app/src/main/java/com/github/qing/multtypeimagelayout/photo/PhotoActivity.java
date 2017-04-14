@@ -61,6 +61,7 @@ public class PhotoActivity extends FragmentActivity {
                 Bundle bundle = new Bundle();
                 bundle.putString(PhotoFragment.KEY_IMG_URL, imgUrls[i]);
                 bundle.putParcelable(PhotoFragment.KEY_START_BOUND, rects.get(i));
+                bundle.putBoolean(PhotoFragment.KEY_TRANS_PHOTO, currentIndex == i);
                 fragment.setArguments(bundle);
                 fragments.add(fragment);
             }
