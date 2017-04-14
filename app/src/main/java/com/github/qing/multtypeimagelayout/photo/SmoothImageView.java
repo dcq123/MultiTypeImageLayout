@@ -1,6 +1,7 @@
 package com.github.qing.multtypeimagelayout.photo;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
@@ -131,8 +132,8 @@ public class SmoothImageView extends PhotoView {
     private int downX, downY;
     private boolean isMoved = false;
     private int alpha = 0;
-    private static final int MIN_TRANS_DEST = 8;
-    private static final float MAX_TRANS_SCALE = 0.6f;
+    private static final int MIN_TRANS_DEST = 5;
+    private static final float MAX_TRANS_SCALE = 0.5f;
 
 
     @Override
@@ -154,35 +155,36 @@ public class SmoothImageView extends PhotoView {
                     int offsetY = my - downY;
 
                     // 水平方向移动不予处理
-                    if (Math.abs(offsetX) > Math.abs(offsetY) || Math.abs(offsetY) < MIN_TRANS_DEST) {
+                    if (!isMoved && (Math.abs(offsetX) > Math.abs(offsetY) || Math.abs(offsetY) < MIN_TRANS_DEST)) {
                         return super.dispatchTouchEvent(event);
                     } else {
                         if (event.getPointerCount() == 1) {
-                            float scale = moveScale();
-                            if ((offsetY > 0 && scale > 0 && scale >= MAX_TRANS_SCALE)
-                                    || (offsetY < 0 && scale < 0 && Math.abs(scale) >= MAX_TRANS_SCALE)) {
-                                return true;
-                            }
                             mStatus = Status.STATE_MOVE;
-                            int dest = offsetY > 0 ? 1 : -1;
-                            // 在此处为了滑动效果，仅移动固定的距离，不跟随offsetY进行移动
-                            offsetTopAndBottom(dest * 8);
-                            scale = Math.abs(moveScale());
+                            offsetLeftAndRight(offsetX);
+                            offsetTopAndBottom(offsetY);
+                            float scale = moveScale();
+                            float scaleXY = 1 - scale * 0.1f;
+                            setScaleY(scaleXY);
+                            setScaleX(scaleXY);
                             isMoved = true;
-                            alpha = (int) (255 * (1 - scale));
+                            alpha = (int) (255 * (1 - scale * 0.5f));
                             invalidate();
+                            if (alpha < 0) {
+                                alpha = 0;
+                            }
                             if (alphaChangeListener != null) {
                                 alphaChangeListener.onAlphaChange(alpha);
                             }
                             return true;
                         }
                     }
+                    downX = mx;
+                    downY = my;
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     if (isMoved) {
-                        float scale = moveScale();
-                        if (Math.abs(scale) <= MAX_TRANS_SCALE / 2) {
+                        if (moveScale() <= MAX_TRANS_SCALE) {
                             moveToOldPosition();
                         } else {
                             changeTransform();
@@ -213,6 +215,20 @@ public class SmoothImageView extends PhotoView {
             }
         });
 
+        ValueAnimator leftAnim = ValueAnimator.ofInt(getLeft(), 0);
+        leftAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            int startValue = 0;
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int value = (int) animation.getAnimatedValue();
+                if (startValue != 0) {
+                    offsetLeftAndRight(value - startValue);
+                }
+                startValue = value;
+            }
+        });
+
         ValueAnimator alphaAnim = ValueAnimator.ofInt(alpha, 255);
         alphaAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -223,10 +239,20 @@ public class SmoothImageView extends PhotoView {
             }
         });
 
+        ValueAnimator scaleAnim = ValueAnimator.ofFloat(getScaleX(), 1);
+        scaleAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float scale = (float) animation.getAnimatedValue();
+                setScaleX(scale);
+                setScaleY(scale);
+            }
+        });
+
         AnimatorSet as = new AnimatorSet();
         as.setDuration(TRANSFORM_DURATION);
         as.setInterpolator(new AccelerateDecelerateInterpolator());
-        as.playTogether(va, alphaAnim);
+        as.playTogether(va, leftAnim, scaleAnim, alphaAnim);
         as.start();
     }
 
@@ -234,7 +260,7 @@ public class SmoothImageView extends PhotoView {
         if (markTransform == null) {
             initTransform();
         }
-        return getTop() / markTransform.height;
+        return Math.abs(getTop() / markTransform.height);
     }
 
     private OnAlphaChangeListener alphaChangeListener;
@@ -263,7 +289,9 @@ public class SmoothImageView extends PhotoView {
         if (markTransform != null) {
             Transform tempTransform = markTransform.clone();
             tempTransform.top = markTransform.top + getTop();
+            tempTransform.left = markTransform.left + getLeft();
             tempTransform.alpha = alpha;
+            tempTransform.scale = markTransform.scale - (1 - getScaleX()) * markTransform.scale;
             animTransform = tempTransform.clone();
             endTransform = tempTransform.clone();
         }
@@ -307,12 +335,7 @@ public class SmoothImageView extends PhotoView {
                 invalidate();
             }
         });
-        animator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
+        animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 /*
@@ -325,16 +348,6 @@ public class SmoothImageView extends PhotoView {
                 if (mStatus == Status.STATE_IN) {
                     mStatus = Status.STATE_NORMAL;
                 }
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
             }
         });
         animator.start();
@@ -351,6 +364,13 @@ public class SmoothImageView extends PhotoView {
     public void transformOut(onTransformListener listener) {
         if (getTop() != 0) {
             offsetTopAndBottom(-getTop());
+        }
+        if (getLeft() != 0) {
+            offsetLeftAndRight(-getLeft());
+        }
+        if (getScaleX() != 1) {
+            setScaleX(1);
+            setScaleY(1);
         }
         setOnTransformListener(listener);
         transformStart = true;

@@ -16,7 +16,6 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.github.chrisbanes.photoview.OnPhotoTapListener;
 import com.github.qing.multtypeimagelayout.R;
 import com.github.qing.multtypeimagelayout.data.ImageUrl;
-import com.pnikosis.materialishprogress.ProgressWheel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,10 +33,10 @@ public class PhotoFragment extends LazyFragment {
 
     @BindView(R.id.photoView)
     SmoothImageView photoView;
-    @BindView(R.id.progress)
-    ProgressWheel progress;
     @BindView(R.id.rootView)
     View rootView;
+    @BindView(R.id.progressContainer)
+    View progress;
 
     private String imgUrl;
 

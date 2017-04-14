@@ -11,14 +11,22 @@
         android:layout_height="match_parent" />
 
 
-    <com.pnikosis.materialishprogress.ProgressWheel
-        android:id="@+id/progress"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
-        android:layout_centerInParent="true"
-        wheel:matProg_barColor="#5588FF"
-        android:visibility="gone"
-        wheel:matProg_barWidth="3dp"
-        wheel:matProg_progressIndeterminate="true" />
+    <RelativeLayout
+        android:id="@+id/progressContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:visibility="gone">
+
+        <com.pnikosis.materialishprogress.ProgressWheel
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_centerInParent="true"
+            wheel:matProg_barColor="#5588FF"
+            wheel:matProg_barWidth="3dp"
+            wheel:matProg_progressIndeterminate="true" />
+
+    </RelativeLayout>
+
 
 </RelativeLayout>
