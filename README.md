@@ -8,11 +8,11 @@
 
 <div>
 
-<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-02-30-016_com.github.qin.png"/>
+<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-02-30-016_com.github.qin.png?imageView2/0/format/webp/q/75|imageslim"/>
 
-<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-03-45-920_com.github.qin.png"/>
+<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-03-45-920_com.github.qin.png?imageView2/0/format/webp/q/75|imageslim"/>
 
-<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-03-35-130_com.github.qin.png"/>
+<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-03-35-130_com.github.qin.png?imageView2/0/format/webp/q/75|imageslim"/>
 
 </div>
 
@@ -24,28 +24,21 @@
 
 <div>
 
-<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-03-00-140_com.github.qin.png"/>
+<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-03-00-140_com.github.qin.png?imageView2/0/format/webp/q/75|imageslim"/>
 
-<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-02-44-773_com.github.qin.png"/>
+<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-02-44-773_com.github.qin.png?imageView2/0/format/webp/q/75|imageslim"/>
 
 
-<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-02-17-267_com.github.qin.png"/>
+<img width="280" height="480" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/Screenshot_2017-04-14-12-02-17-267_com.github.qin.png?imageView2/0/format/webp/q/75|imageslim"/>
 
 </div>
 
 #### 图片预览
 
-图片预览效果类似与微信的图片预览，进入预览时有共享动画，可**拖动退出图片预览**。
+图片预览效果类似与微信的图片预览，进入预览时有共享动画，可**拖动退出图片预览**。由于`Gif`过大所以只能放置链接。
 
-<div>
+[图片预览转场动画](http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/4%E6%9C%88-14-2017%2016-15-08.gif)
 
-<img width="300" height="500" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/4%E6%9C%88-14-2017%2016-15-08.gif"/>
-
-<img width="300" height="500" src="http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/4%E6%9C%88-14-2017%2016-18-26.gif"/>
-
-</div>
+[拖动图片退出预览动画](http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/4%E6%9C%88-14-2017%2016-18-26.gif)
 
 图片预览的处理实现，使用[**WeixinPhotoViewer**](https://github.com/nirvanawoody/WeixinPhotoViewer),它是在`PhotoView`的基础上实现了预览时类似与微信的转场效果。该`Demo`在此基础上添加了拖动退出图片预览的功能。
-
-
-
