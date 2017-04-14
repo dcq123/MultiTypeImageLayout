@@ -42,3 +42,10 @@
 [拖动图片退出预览动画](http://onxvhxvw6.bkt.clouddn.com/image/multiTypeImage/4%E6%9C%88-14-2017%2016-18-26.gif)
 
 图片预览的处理实现，使用[**WeixinPhotoViewer**](https://github.com/nirvanawoody/WeixinPhotoViewer),它是在`PhotoView`的基础上实现了预览时类似与微信的转场效果。该`Demo`在此基础上添加了拖动退出图片预览的功能。
+
+#### 感谢
+
+`Demo`主要使用了`MultiType`和`WeixinPhotoViewer`并在此基础上根据自己的需求进行了改造。特此感谢。
+
+1. [**MultiType**](https://github.com/drakeet/MultiType)
+2. [**WeixinPhotoViewer**](https://github.com/nirvanawoody/WeixinPhotoViewer)
